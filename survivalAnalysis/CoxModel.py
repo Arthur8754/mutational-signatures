@@ -95,3 +95,17 @@ class CoxModel:
             class_samples[test_index] = self.predict_class(X[test_index], cutoff)
 
         return class_samples
+    
+    def predict_mean_survival_curve(self, X: np.ndarray[np.ndarray[float]])->tuple[np.ndarray,np.ndarray]:
+        """ 
+        Predict the mean survival curve from the samples, with the event time.
+
+        ### Parameters :
+        - X : the matrix containing the variables values for each sample.
+
+        ### Returns :
+        - the event times (x-axis)
+        - the mean survival probability (y-axis)
+        """
+        mean_survival_curve = np.mean(self.model.predict_survival_function(X,return_array=True),axis=0)
+        return self.model.event_times_, mean_survival_curve

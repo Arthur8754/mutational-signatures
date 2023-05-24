@@ -1,6 +1,5 @@
 from sksurv.linear_model import CoxPHSurvivalAnalysis
 from sklearn.model_selection import KFold
-import pandas as pd
 import numpy as np
 
 class CoxModel:
@@ -109,3 +108,16 @@ class CoxModel:
         """
         mean_survival_curve = np.mean(self.model.predict_survival_function(X,return_array=True),axis=0)
         return self.model.event_times_, mean_survival_curve
+    
+    def find_concordance_index(self, X: np.ndarray[np.ndarray[float]], y: np.ndarray[tuple[int, float]])->float:
+        """ 
+        Find the concordance index from the samples.
+
+        ### Parameters :
+        - X : the matrix containing the variables values for each sample.
+        - y : the event status and the time surviving for each sample.
+
+        ### Returns :
+        The corresponding concordance index.
+        """
+        return np.round(self.model.score(X, y),2)

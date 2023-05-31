@@ -1,4 +1,7 @@
 from sksurv.linear_model import CoxPHSurvivalAnalysis
+from sksurv.metrics import concordance_index_censored
+from sksurv.nonparametric import kaplan_meier_estimator
+from sksurv.compare import compare_survival
 from sklearn.model_selection import KFold
 import numpy as np
 
@@ -46,7 +49,7 @@ class CoxModel:
         """
         return np.median(risk_scores)
     
-    def predict_class(self, X: np.ndarray[np.ndarray[float]], cutoff: float)->np.ndarray:
+    def predict_class(self, risk_scores: np.ndarray, cutoff: float)->np.ndarray:
         """ 
         Predict the risk class (high or low) for each sample.
 
@@ -57,12 +60,12 @@ class CoxModel:
         ### Returns :
         The risk class for each sample, 1 if high, 0 otherwise.
         """
-        risk_scores = self.predict_risk_score(X)
-        risk_scores[risk_scores>=cutoff] = 1
-        risk_scores[risk_scores<cutoff] = 0
-        return risk_scores
+        risk_classes = np.copy(risk_scores)
+        risk_classes[risk_scores>=cutoff] = 1
+        risk_classes[risk_scores<cutoff] = 0
+        return risk_classes
     
-    def leave_one_out_cross_validation(self, X: np.ndarray[np.ndarray[float]], y: np.ndarray[tuple[int, float]])->np.ndarray:
+    def leave_one_out_cross_validation(self, X: np.ndarray[np.ndarray[float]], y: np.ndarray[tuple[int, float]])->tuple[np.ndarray, np.ndarray]:
         """ 
         Make the one out cross validation to find the risk class for each sample.
 
@@ -71,10 +74,12 @@ class CoxModel:
         - y : the train labels, containing the event status and the time surviving for each sample.
 
         ### Returns :
-        The risk class for each sample, after training.
+        - The risk class for each sample, after training.
+        - The risk score for each sample, after training.
         """
         # Sample array
         class_samples = np.zeros(y.shape)
+        risk_score_samples = np.zeros(y.shape)
 
         # Split the index to n_splits folds
         n_samples = X.shape[0]
@@ -91,33 +96,52 @@ class CoxModel:
             cutoff = self.find_cutoff(train_scores)
 
             # Test
-            class_samples[test_index] = self.predict_class(X[test_index], cutoff)
+            risk_score_samples[test_index] = self.predict_risk_score(X[test_index])
+            class_samples[test_index] = self.predict_class(risk_score_samples[test_index], cutoff)
 
-        return class_samples
+        return class_samples, risk_score_samples
     
-    def predict_mean_survival_curve(self, X: np.ndarray[np.ndarray[float]])->tuple[np.ndarray,np.ndarray]:
+    def get_c_index(self, status: np.ndarray, time: np.ndarray, risk_scores: np.ndarray) -> float:
         """ 
-        Predict the mean survival curve from the samples, with the event time.
+        Compute the concordance index from the input samples.
 
         ### Parameters :
-        - X : the matrix containing the variables values for each sample.
+        - status (n_samples,) : the event status for each sample (1 if event happened, 0 otherwise)
+        - time (n_samples,) : the surviving time for each sample.
+        - risk_score (n_samples,) : the risk score for each sample.
 
         ### Returns :
-        - the event times (x-axis)
-        - the mean survival probability (y-axis)
+        The associated concordance index.
         """
-        mean_survival_curve = np.mean(self.model.predict_survival_function(X,return_array=True),axis=0)
-        return self.model.event_times_, mean_survival_curve
+        return np.round(concordance_index_censored(status, time, risk_scores)[0],2)
     
-    def find_concordance_index(self, X: np.ndarray[np.ndarray[float]], y: np.ndarray[tuple[int, float]])->float:
-        """ 
-        Find the concordance index from the samples.
+    def kaplan_meier_estimation(self, status: np.ndarray[bool], time: np.ndarray)->tuple[float, float]:
+        """
+        Estimate the survival curve using the Kaplan Meier Estimator.
 
         ### Parameters :
-        - X : the matrix containing the variables values for each sample.
-        - y : the event status and the time surviving for each sample.
+        - status (n_samples,) : the event status for each sample (1 if event happened, 0 otherwise)
+        - time (n_samples,) : the surviving time for each sample.
 
         ### Returns :
-        The corresponding concordance index.
+        - the time axis ;
+        - the survival probability for each time point.
         """
-        return np.round(self.model.score(X, y),2)
+        return kaplan_meier_estimator(status, time)
+    
+    def log_rank_test(self, status: np.ndarray, time: np.ndarray, group_indicator: np.ndarray)->float:
+        """
+        Make the log rank test between groups of group_indicator, and returns the associated p value.
+
+        ### Parameters :
+        - status (n_samples,) : the event status for each sample (1 if event happened, 0 otherwise)
+        - time (n_samples,) : the surviving time for each sample.
+        - group_indicator (n_samples,) : the label of the group for each sample.
+
+        ### Returns :
+        The p value after making log rank test.
+        """
+        # Structure array for log rank tester input
+        y = np.array(list(zip(status, time)), dtype=[('status','?'),('time surviving','<f8')])
+        return np.round(compare_survival(y, group_indicator)[1],2)
+

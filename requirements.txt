@@ -4,3 +4,4 @@ sklearn
 scikit-survival
 matplotlib
 lifelines
+seaborn

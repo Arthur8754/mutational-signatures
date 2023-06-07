@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.metrics import roc_curve, roc_auc_score, accuracy_score, precision_score, recall_score, f1_score
 
 class BinarySurvival:
     """
@@ -59,6 +60,18 @@ class BinarySurvival:
         """
         self.model.fit(X, y)
 
+    def predict_score(self, X: np.ndarray)->np.ndarray:
+        """
+        Predict the output score for each patient.
+
+        ### Parameters :
+        - X (n_samples, n_features) : the features of each patient
+
+        ### Returns :
+        The output score of the model for each patient (class 1 probability).
+        """
+        return self.model.predict_proba(X).transpose()[0]
+
     def predict(self, X: np.ndarray)->np.ndarray:
         """
         Predict the class of each patient in parameter.
@@ -71,3 +84,45 @@ class BinarySurvival:
         """
         return self.model.predict(X)
     
+    def eval_metrics_from_conf_matrix(self, y_true: np.ndarray, y_pred: np.ndarray)->tuple[float, float, float, float]:
+        """
+        Compute the accuracy, precision, recall, and f1-score.
+
+        ### Parameters :
+        - y_true : the correct classes for each patient
+        - y_pred : the predicted classes for each patient
+
+        ### Returns :
+        Accuracy, Precision, Recall, F1-score
+        """
+        return np.round([accuracy_score(y_true, y_pred), precision_score(y_true, y_pred), recall_score(y_true, y_pred), f1_score(y_true, y_pred)],2)
+    
+    def compute_roc_curve(self, y_true: np.ndarray, y_score: np.ndarray)->tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Compute the ROC curve associated to the prediction.
+
+        ### Parameters :
+        - y_true : the correct classes for each patient
+        - y_score : the output score predicted by the model (class 1 probability)
+
+        ### Returns :
+        - The False Positive Rate (x-axis) for each threshold
+        - The True Positive Rate (y-axis) for each threshold
+        - The thresholds used.
+        """
+        return roc_curve(y_true, y_score)
+    
+    def compute_auc(self, y_true: np.ndarray, y_score: np.ndarray)->float:
+        """
+        Compute the AUC associated to the prediction.
+
+        ### Parameters :
+        - y_true : the correct classes for each patient
+        - y_score : the output score predicted by the model (class 1 probability)
+
+        ### Returns :
+        The AUC score
+        """
+        return np.round(roc_auc_score(y_true, y_score),2)
+    
+

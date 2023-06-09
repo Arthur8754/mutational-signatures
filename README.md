@@ -9,9 +9,6 @@ pip install -r requirements.txt
 ```
 
 ## Execute the code
-To run the code, you can read the ```cox-model.ipynb``` Jupyter notebook.
-
-## Model classes
-
-### Survival analysis classes
-- The ```CoxModel.py``` file contains the ```CoxModel``` class, which implements the Cox Proportional Hazard model.
+You can execute the following Jupyter notebooks :
+- `classification.ipynb` : this notebook executes a binary classifier to predict a response to immunotherapy.
+- `cox-regression.ipynb` : this notebook executes the Cox regression model to find the high risk patients and low risk patients and to estimate the survival probability and the no progression probability. 

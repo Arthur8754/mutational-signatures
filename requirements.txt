@@ -5,3 +5,4 @@ scikit-survival
 matplotlib
 lifelines
 seaborn
+torch_geometric

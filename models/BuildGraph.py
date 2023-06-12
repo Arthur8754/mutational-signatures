@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
 class BuildGraph:
@@ -11,6 +12,12 @@ class BuildGraph:
         """
         self.n_neighbors = n_neighbors
         self.metric = metric
+
+    def split_per_tumour(self, df: pd.DataFrame):
+        """
+        Split the patients depending on their tumour.
+        """
+        pass
 
     def build_adjacency_matrix(self, X: np.ndarray)->np.ndarray:
         """

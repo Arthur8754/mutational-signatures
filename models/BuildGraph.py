@@ -7,29 +7,28 @@ class BuildGraph:
     """ 
     This class creates a graph from an initial dataframe, with the k-NN algorithm. Each node is connected to its k nearest neighbors.
     """
-    def __init__(self, k: int, metric: str) -> None:
-        """
-        - k : the number of neighbors for each node in the graph.
-        - metric ("euclidean","cosine","manhattan") : the metric used to compute distance between points.
-        """
-        self.model = NearestNeighbors(n_neighbors=k, metric=metric) 
+    def __init__(self) -> None:
+        pass
 
-    def apply_knn(self, X: np.ndarray)->np.ndarray:
+    def apply_knn(self, X: np.ndarray, k: int, metric: str)->np.ndarray:
         """
         Apply the k-NN algorithm to connect each node to its k nearest neighbors.
 
         ### Parameters :
         - X (n_samples, n_features) : the points to connect, with their features.
         - k : the number of neighbors for each node in the graph.
+        - metric ("euclidean","cosine","manhattan") : the metric used to compute distance between points.
 
         ### Returns :
         The adjacency matrix of the graph.
         """
+        if X.shape[0]<k:
+            return np.zeros((X.shape[0],X.shape[0]))
+        
         # Find the k nearest neighbors of each patient
-        self.model.fit(X)
-
+        model = NearestNeighbors(n_neighbors=k, metric=metric).fit(X)
         # Build the associated adjacency matrix
-        A = self.model.kneighbors_graph(X).toarray()
+        A = model.kneighbors_graph(X).toarray()
         return A-np.identity(A.shape[0])
     
     def show_graph(self, A: np.ndarray)->None:

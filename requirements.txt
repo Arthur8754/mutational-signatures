@@ -6,3 +6,4 @@ matplotlib
 lifelines
 seaborn
 torch_geometric
+networkx

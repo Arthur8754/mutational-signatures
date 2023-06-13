@@ -13,9 +13,9 @@ class BuildGraph:
         - k : the number of neighbors for each node in the graph.
         - metric ("euclidean","cosine","manhattan") : the metric used to compute distance between points.
         """
-        self.k = k
+        self.k = k+1
         self.metric=metric
-        self.model = NearestNeighbors(n_neighbors=k, metric=metric)
+        self.model = NearestNeighbors(n_neighbors=k+1, metric=metric)
 
     def apply_knn(self, X: np.ndarray)->np.ndarray:
         """
@@ -90,14 +90,19 @@ class BuildGraph:
         The mean proportion of neighbor patients which are similar for the given feature.
         """
         similarity = 0
+        n=0
         for i in range(A.shape[0]):
-            # Feature extraction of the neighbors of i
-            neighbors_i = feature[np.where(A[i] == 1)]
-
             # Feature of patient i
             feature_i = feature[i]
 
-            # Count similar feature
-            similarity += np.count_nonzero(np.where(neighbors_i == feature_i,True,False))/neighbors_i.shape[0]
+            # Feature extraction of the neighbors of i
+            neighbors_i = feature[np.where(A[i] == 1)[0]]
 
-        return np.round(similarity/A.shape[0],2)
+            # Count similar feature
+            if neighbors_i.shape[0]!=0:
+                n+=1
+                similarity += np.count_nonzero(np.where(neighbors_i == feature_i,True,False))/neighbors_i.shape[0]
+
+        if n!=0:
+            return np.round(similarity/n,2)
+        return 0

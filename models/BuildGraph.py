@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -7,29 +8,60 @@ class BuildGraph:
     """ 
     This class creates a graph from an initial dataframe, with the k-NN algorithm. Each node is connected to its k nearest neighbors.
     """
-    def __init__(self) -> None:
-        pass
+    def __init__(self, k: int, metric: str) -> None:
+        """
+        - k : the number of neighbors for each node in the graph.
+        - metric ("euclidean","cosine","manhattan") : the metric used to compute distance between points.
+        """
+        self.k = k
+        self.metric=metric
+        self.model = NearestNeighbors(n_neighbors=k, metric=metric)
 
-    def apply_knn(self, X: np.ndarray, k: int, metric: str)->np.ndarray:
+    def apply_knn(self, X: np.ndarray)->np.ndarray:
         """
         Apply the k-NN algorithm to connect each node to its k nearest neighbors.
 
         ### Parameters :
         - X (n_samples, n_features) : the points to connect, with their features.
-        - k : the number of neighbors for each node in the graph.
-        - metric ("euclidean","cosine","manhattan") : the metric used to compute distance between points.
 
         ### Returns :
         The adjacency matrix of the graph.
         """
-        if X.shape[0]<k:
+        # Need to have n_samples >= n_neighbors
+        if X.shape[0]<self.k:
             return np.zeros((X.shape[0],X.shape[0]))
         
         # Find the k nearest neighbors of each patient
-        model = NearestNeighbors(n_neighbors=k, metric=metric).fit(X)
+        self.model.fit(X)
+
         # Build the associated adjacency matrix
-        A = model.kneighbors_graph(X).toarray()
+        A = self.model.kneighbors_graph(X).toarray()
         return A-np.identity(A.shape[0])
+    
+    def merge_adjacency_matrix(self, matrices:list[np.ndarray])->np.ndarray:
+        """ 
+        Merge the local adjacency matrices for subgraphs into global one for whole graph.
+
+        ### Parameters :
+        - matrices : the local adjacency matrices of the distinct subgraphs.
+
+        ### Returns ;
+        The global adjacency matrix for the whole graph.
+        """
+        #shape_A = np.sum([matrices[i].shape[0] for i in range(len(matrices))])
+        A = matrices[0]
+
+        # Iteratively merge each matrix
+        for i in range(1,len(matrices)):
+            shape_A, shape_i = A.shape[0], matrices[i].shape[0]
+
+            # Concatenation of A and the next matrix along diagonal
+            A = np.block([
+                [A,np.zeros((shape_A, shape_i))],
+                [np.zeros((shape_i, shape_A)),matrices[i]]
+            ])
+
+        return A
     
     def show_graph(self, A: np.ndarray)->None:
         """ 

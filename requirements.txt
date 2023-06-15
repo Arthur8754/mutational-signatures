@@ -5,5 +5,6 @@ scikit-survival
 matplotlib
 lifelines
 seaborn
+torch
 torch_geometric
 networkx

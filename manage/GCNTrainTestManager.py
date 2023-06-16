@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class GCNTrainTestManager:
     """ 
     This class manages the train/test process for a given model.
@@ -14,14 +16,19 @@ class GCNTrainTestManager:
         self.trainset = trainset
         self.loss_function = loss_function
         self.optimizer = optimizer
+        self.train_loss = []
 
     def train(self, n_epochs: int):
         """ 
         Train the model for n_epochs.
         """
+        self.train_loss = []
+
         for epoch in range(n_epochs):
             
-            print(f"Epoch {epoch+1} of {n_epochs}")
+            if epoch % 10 == 0:
+                print(f"Epoch {epoch+1} of {n_epochs}")
+                
             # Clear gradients
             self.optimizer.zero_grad()
 
@@ -30,6 +37,7 @@ class GCNTrainTestManager:
 
             # Compute loss
             loss = self.loss_function(out, self.trainset.y)
+            self.train_loss.append(loss.item())
 
             # Backward pass (gradients computation)
             loss.backward()
@@ -38,3 +46,16 @@ class GCNTrainTestManager:
             self.optimizer.step()
 
         print("End of training.")
+
+    def plot_loss(self):
+        """
+        Plot the loss along epochs.
+        """
+        epochs = range(len(self.train_loss))
+        fig, ax = plt.subplots(figsize=(10,7))
+        ax.plot(epochs, self.train_loss, label='train loss')
+        ax.set_xlabel("Epochs")
+        ax.set_ylabel("Loss")
+        ax.set_title("Train loss")
+        ax.legend()
+        plt.savefig("loss.png")

@@ -53,7 +53,7 @@ class BuildGraph:
         None
         """
         X = torch.from_numpy(self.df.loc[:,features_name].to_numpy()).float()
-        y = self.df[label_name].to_numpy()
+        y = torch.from_numpy(self.df[label_name].to_numpy()).float().unsqueeze(1)
 
         # Initialize with empty graph
         self.G = nx.Graph()

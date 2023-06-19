@@ -19,7 +19,12 @@ class GCN(torch.nn.Module):
         self.linear = Linear(in_features=num_features, out_features=1)
 
     def forward(self, x, edge_index):
+
+        # Convolution
         h = torch.relu(self.conv(x, edge_index))
+
+        # Response probability
         out = torch.sigmoid(self.linear(h))
-        return out, h
+
+        return out
 

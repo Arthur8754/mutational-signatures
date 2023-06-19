@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
 
 class GCNTrainTestManager:
     """ 
@@ -28,12 +29,12 @@ class GCNTrainTestManager:
             
             if epoch % 10 == 0:
                 print(f"Epoch {epoch+1} of {n_epochs}")
-                
+
             # Clear gradients
             self.optimizer.zero_grad()
 
             # Forward pass
-            out, h = self.model(self.trainset.x, self.trainset.edge_index)
+            out = self.model(self.trainset.x, self.trainset.edge_index)
 
             # Compute loss
             loss = self.loss_function(out, self.trainset.y)

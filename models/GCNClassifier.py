@@ -2,7 +2,7 @@ import torch
 from torch.nn import Linear
 from torch_geometric.nn import GCNConv
 
-class GCN(torch.nn.Module):
+class GCNClassifier(torch.nn.Module):
     """
     This class implements a Graph Convolutional Network.
     """

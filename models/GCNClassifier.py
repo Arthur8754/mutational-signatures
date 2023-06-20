@@ -6,7 +6,7 @@ class GCNClassifier(torch.nn.Module):
     """
     This class implements a Graph Convolutional Network.
     """
-    def __init__(self, num_features) -> None:
+    def __init__(self, num_features: int) -> None:
         """
         - num_features : the number of features for each patient
         """

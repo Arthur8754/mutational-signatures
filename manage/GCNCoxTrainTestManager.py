@@ -2,22 +2,22 @@ import matplotlib.pyplot as plt
 import torch
 from sklearn.metrics import accuracy_score
 
-class GCNTrainTestManager:
+class GCNCoxTrainTestManager:
     """ 
     This class manages the train/test process for a given model.
     """
-    def __init__(self, model, trainset, loss_function, optimizer) -> None:
+    def __init__(self, model, trainset, status, time) -> None:
         """
         ### Parameters :
         - model : the GCN model to train.
         - train : the graph used for training
-        - loss : the loss to optimize
-        - optimizer : the optimizer algorithm to minimize the loss.
+        - status : the status event for each patient
+        - time : the time event for each patient
         """
         self.model = model
         self.trainset = trainset
-        self.loss_function = loss_function
-        self.optimizer = optimizer
+        self.status = status
+        self.time = time
         self.train_loss = []
 
     def train(self, n_epochs: int):
@@ -31,21 +31,22 @@ class GCNTrainTestManager:
             if epoch % 10 == 0:
                 print(f"Epoch {epoch+1} of {n_epochs}")
 
-            # Clear gradients
-            self.optimizer.zero_grad()
-
             # Forward pass
             out = self.model(self.trainset.x, self.trainset.edge_index)
 
             # Compute loss
-            loss = self.loss_function(out, self.trainset.y)
+            loss = self.model.npll_loss(out, self.status, self.time)
             self.train_loss.append(loss.item())
 
             # Backward pass (gradients computation)
             loss.backward()
 
             # Update parameters
-            self.optimizer.step()
+            with torch.no_grad():
+                for param in self.model.parameters():
+                    new_param = param - 1*param.grad 
+                    param.copy_(new_param)
+                    param.grad.zero_()
 
         print("End of training.")
 

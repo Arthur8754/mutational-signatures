@@ -42,7 +42,7 @@ class GCNCoxModel(torch.nn.Module):
         - time : the time event for each patient
 
         ### Returns :
-        The NLPP loss.
+        The NPLL loss.
         """
         loss = torch.zeros(1)
 

@@ -49,7 +49,7 @@ class GCNTrainTestManager:
 
         print("End of training.")
 
-    def plot_loss(self):
+    def plot_loss(self, title: str, filename: str):
         """
         Plot the loss along epochs.
         """
@@ -58,6 +58,6 @@ class GCNTrainTestManager:
         ax.plot(epochs, self.train_loss, label='train loss')
         ax.set_xlabel("Epochs")
         ax.set_ylabel("Loss")
-        ax.set_title("Train loss")
+        ax.set_title(title)
         ax.legend()
-        plt.savefig("loss.png")
+        plt.savefig(filename)

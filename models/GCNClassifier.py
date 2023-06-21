@@ -28,3 +28,5 @@ class GCNClassifier(torch.nn.Module):
 
         return out
 
+    def forward_conv(self, x, edge_index):
+        return self.conv(x, edge_index)

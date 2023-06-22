@@ -27,9 +27,6 @@ class GCNTrainTestManager:
         self.train_loss = []
 
         for epoch in range(n_epochs):
-            
-            if epoch % 10 == 0:
-                print(f"Epoch {epoch+1} of {n_epochs}")
 
             # Clear gradients
             self.optimizer.zero_grad()
@@ -46,8 +43,6 @@ class GCNTrainTestManager:
 
             # Update parameters
             self.optimizer.step()
-
-        print("End of training.")
 
     def plot_loss(self, title: str, filename: str):
         """

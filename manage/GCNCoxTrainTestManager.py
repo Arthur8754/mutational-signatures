@@ -36,6 +36,7 @@ class GCNCoxTrainTestManager:
 
             # Compute loss
             loss = self.model.npll_loss(out, self.status, self.time)
+            print(loss)
             self.train_loss.append(loss.item())
 
             # Backward pass (gradients computation)
@@ -44,7 +45,7 @@ class GCNCoxTrainTestManager:
             # Update parameters
             with torch.no_grad():
                 for param in self.model.parameters():
-                    new_param = param - 1*param.grad 
+                    new_param = param - 0.01*param.grad 
                     param.copy_(new_param)
                     param.grad.zero_()
 

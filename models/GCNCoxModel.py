@@ -48,7 +48,9 @@ class GCNCoxModel(torch.nn.Module):
 
         for i in range(out.shape[0]):
             status_i, Ti, out_i = status[i], time[i], out[i]
-            to_sum = torch.where((status==1) & (time>=Ti))[0]
+            # Supposons que tous nos patients sont not censored
+            to_sum = torch.where(time>=Ti)[0]
+            # loss += status_i*(torch.log(torch.sum(torch.exp(out[to_sum]))) - out_i)/out.shape[0]
             loss += status_i*torch.log(torch.sum(torch.exp(out[to_sum]-out_i)))/out.shape[0]
         
         return loss

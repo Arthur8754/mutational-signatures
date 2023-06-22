@@ -11,9 +11,7 @@ class BuildGraph:
     """
     def __init__(self, df: pd.DataFrame) -> None:
         """ 
-        - df : the source dataframe to build the graph 
-        - A : the adjacency matrix of the graph
-        - G : the networkx graph
+        - df : the dataframe used to build the graph.
         """
         self.df = df
         self.A = np.zeros((df.shape[0],df.shape[0]))
@@ -83,3 +81,5 @@ class BuildGraph:
         nx.draw(self.G)
         plt.title(title)
         plt.savefig(filename)
+
+

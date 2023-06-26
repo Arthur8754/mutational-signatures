@@ -3,6 +3,7 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 import torch
+from sklearn.cluster import KMeans
 
 class BuildGraph:
     """ 
@@ -36,6 +37,35 @@ class BuildGraph:
         for i in range(shape_A):
             value = column_values[i]
             self.A[i] = np.where(column_values==value,1,0)
+
+        self.A = self.A - np.identity(shape_A)
+
+    def compute_adjacency_matrix_kmeans(self, n_clusters: int, columns_names: list[str])->None:
+        """ 
+        Compute the adjacency matrix of the graph, with splitting per KMeans clusters. Each is a fully connected graph.
+
+        ### Parameters :
+        - n_clusters : the number of fully connected graphs.
+        - columns_names : the names of the columns used as KMeans features.
+
+        ### Returns :
+        None
+        """
+        shape_A = self.df.shape[0]
+
+        # Instanciate the KMeans model
+        kmeans = KMeans(n_clusters=n_clusters, n_init=10)
+
+        # Select features columns for future clustering
+        values = self.df.loc[:,columns_names].to_numpy()
+
+        # Apply clusters and extract cluster labels.
+        labels = kmeans.fit(values).labels_
+
+        # Split per labels
+        for i in range(shape_A):
+            label = labels[i]
+            self.A[i] = np.where(labels==label,1,0)
 
         self.A = self.A - np.identity(shape_A)
 

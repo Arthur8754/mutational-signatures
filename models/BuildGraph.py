@@ -3,12 +3,10 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 import torch
-from sklearn.cluster import KMeans, AgglomerativeClustering
 
 class BuildGraph:
     """ 
-    This class creates a graph from an initial dataframe. The graph is an union of distinct complete sub graphs, where each sub graph 
-    contains the patients with the same value of a specific column.
+    This class creates a graph from an initial dataframe.
     """
     def __init__(self, df: pd.DataFrame) -> None:
         """ 
@@ -18,85 +16,39 @@ class BuildGraph:
         self.A = np.zeros((df.shape[0],df.shape[0]))
         self.G = None
 
-    def compute_adjacency_matrix(self, column_name: str)->None:
-        """ 
-        Compute the adjacency matrix of the graph, with splitting per column_name values.
+    def apply_clustering(self, model, columns_names: list[str])->np.ndarray:
+        """
+        Apply a clutering model and split patients per cluster.
 
         ### Parameters :
-        - column_name : the name of column used to make the split
-        - min_rows : the minimum number of patients per sub graphs.
+        - model : the sklearn clustering model
+        - columns_names : the names of features used in the dataframe to make the clustering.
 
         ### Returns :
-        None
+        The labels of each patient
         """
-        # Initialize matrix with 0
-        shape_A = self.df.shape[0]
 
-        # For each patient, connect with patient with the same column_name value.
-        column_values = self.df[column_name].to_numpy()
-        for i in range(shape_A):
-            value = column_values[i]
-            self.A[i] = np.where(column_values==value,1,0)
+        # Extract features of each patient
+        X = self.df.loc[:,columns_names].to_numpy()
 
-        self.A = self.A - np.identity(shape_A)
-
-    def compute_adjacency_matrix_kmeans(self, n_clusters: int, columns_names: list[str])->None:
+        # Apply the clustering and return labels.
+        return model.fit(X).labels_
+    
+    def compute_adjacency_matrix(self, labels: list[str])->None:
         """ 
-        Compute the adjacency matrix of the graph, with splitting per KMeans clusters. Each is a fully connected graph.
+        Compute the adjacency matrix of the graph, with splitting per label.
 
         ### Parameters :
-        - n_clusters : the number of fully connected graphs.
-        - columns_names : the names of the columns used as KMeans features.
+        - labels : the label of each patient
 
         ### Returns :
         None
         """
         shape_A = self.df.shape[0]
 
-        # Instanciate the KMeans model
-        kmeans = KMeans(n_clusters=n_clusters, n_init=10)
-
-        # Select features columns for future clustering
-        values = self.df.loc[:,columns_names].to_numpy()
-
-        # Apply clusters and extract cluster labels.
-        labels = kmeans.fit(values).labels_
-
-        # Split per labels
         for i in range(shape_A):
             label = labels[i]
             self.A[i] = np.where(labels==label,1,0)
-
-        self.A = self.A - np.identity(shape_A)
-
-    def compute_adjacency_matrix_hierarchical(self, n_clusters: int, columns_names: list[str])->None:
-        """ 
-        Compute the adjacency matrix of the graph, with splitting per hierarchical clustering clusters. Each is a fully connected graph.
-
-        ### Parameters :
-        - n_clusters : the number of fully connected graphs.
-        - columns_names : the names of the columns used as Hierarchical clustering features.
-
-        ### Returns :
-        None
-        """
-        shape_A = self.df.shape[0]
-
-        # Instanciate the KMeans model
-        agglomerative = AgglomerativeClustering(n_clusters=n_clusters)
-
-        # Select features columns for future clustering
-        values = self.df.loc[:,columns_names].to_numpy()
-
-        # Apply clusters and extract cluster labels.
-        labels = agglomerative.fit(values).labels_
-
-        # Split per labels
-        for i in range(shape_A):
-            label = labels[i]
-            self.A[i] = np.where(labels==label,1,0)
-
-        self.A = self.A - np.identity(shape_A)
 
     def create_graph(self, features_name: list[str], label_name: str)->None:
         """ 

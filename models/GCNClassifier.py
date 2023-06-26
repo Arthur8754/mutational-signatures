@@ -5,11 +5,11 @@ from torch_geometric.nn import GCNConv
 class GCNClassifier(torch.nn.Module):
     """
     This class implements a Graph Convolutional Network.
+
+    ### Parameters :
+    - num_features : the number of features for each patient
     """
     def __init__(self, num_features: int) -> None:
-        """
-        - num_features : the number of features for each patient
-        """
         super().__init__()
 
         # Convolutive layer
@@ -30,3 +30,29 @@ class GCNClassifier(torch.nn.Module):
 
     def forward_conv(self, x, edge_index):
         return self.conv(x, edge_index)
+    
+    def train(self, n_epochs, x, edge_index, y, loss_function, optimizer):
+        """ 
+        Train the model for n_epochs.
+        """
+        train_loss = []
+
+        for epoch in range(n_epochs):
+
+            # Clear gradients
+            optimizer.zero_grad()
+
+            # Forward pass
+            out = self.forward(x, edge_index)
+
+            # Compute loss
+            loss = loss_function(out, y)
+            train_loss.append(loss.item())
+
+            # Backward pass (gradients computation)
+            loss.backward()
+
+            # Update parameters
+            optimizer.step()
+
+        return train_loss

@@ -8,6 +8,12 @@ import numpy as np
 class CoxModel:
     """
     Cox Proportional Hazard model.
+
+    ### Parameters :
+    None
+
+    ### Attributes :
+    - model : the Cox model from scikit-survival (logistic regression).
     """
     def __init__(self) -> None:
         self.model = CoxPHSurvivalAnalysis()
@@ -25,7 +31,7 @@ class CoxModel:
         """
         self.model = self.model.fit(X, y)
 
-    def predict_risk_score(self, X: np.ndarray[np.ndarray[float]]) -> np.ndarray:
+    def predict_risk_score(self, X: np.ndarray[np.ndarray[float]]) -> None:
         """ 
         Predict the risk for each sample.
 
@@ -33,8 +39,9 @@ class CoxModel:
         - X : the matrix containing the variables for each sample.
 
         ### Returns :
-        The risk score for each sample.
+        The array of risk scores for each patient of X.
         """
+        # self.risk_scores = self.model.predict(X)
         return self.model.predict(X)
     
     def find_cutoff(self, risk_scores: np.ndarray)->float:
@@ -45,7 +52,7 @@ class CoxModel:
         - risk_scores : the risk score for each sample.
 
         ### Returns :
-        The median of these risks, which is the high-low risk cutoff.
+        The threshold high risk / low risk
         """
         return np.median(risk_scores)
     
@@ -65,41 +72,7 @@ class CoxModel:
         risk_classes[risk_scores<cutoff] = 0
         return risk_classes
     
-    def leave_one_out_cross_validation(self, X: np.ndarray[np.ndarray[float]], y: np.ndarray[tuple[int, float]])->tuple[np.ndarray, np.ndarray]:
-        """ 
-        Make the one out cross validation to find the risk class for each sample.
-
-        ### Parameters :
-        - X : the train data, containing the variables values for each sample.
-        - y : the train labels, containing the event status and the time surviving for each sample.
-
-        ### Returns :
-        - The risk class for each sample, after training.
-        - The risk score for each sample, after training.
-        """
-        # Sample array
-        class_samples = np.zeros(y.shape)
-        risk_score_samples = np.zeros(y.shape)
-
-        # Split the index to n_splits folds
-        n_samples = X.shape[0]
-        folds = KFold(n_splits=n_samples, shuffle=True).split(X)
-        
-        # Train - cutoff - test for each fold
-        for i, (train_index, test_index) in enumerate(folds):
-            
-            # Train
-            self.train(X[train_index],y[train_index])
-
-            # Predict train scores and find cutoff
-            train_scores = self.predict_risk_score(X[train_index])
-            cutoff = self.find_cutoff(train_scores)
-
-            # Test
-            risk_score_samples[test_index] = self.predict_risk_score(X[test_index])
-            class_samples[test_index] = self.predict_class(risk_score_samples[test_index], cutoff)
-
-        return class_samples, risk_score_samples
+    ### FAUDRAIT DÉPLACER AILLEURS CE QUI EST EN-DESSOUS ###
     
     def get_c_index(self, status: np.ndarray, time: np.ndarray, risk_scores: np.ndarray) -> float:
         """ 
@@ -144,4 +117,3 @@ class CoxModel:
         # Structure array for log rank tester input
         y = np.array(list(zip(status, time)), dtype=[('status','?'),('time surviving','<f8')])
         return np.round(compare_survival(y, group_indicator)[1],2)
-

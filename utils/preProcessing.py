@@ -8,8 +8,9 @@ class preProcessing:
     """
     def __init__(self) -> None:
         pass
-
-    def delete_nan_values(self, df: pd.DataFrame)->pd.DataFrame:
+    
+    @staticmethod
+    def delete_nan_values(df: pd.DataFrame)->pd.DataFrame:
         """
         Delete rows which contains at least 1 NaN value.
 
@@ -21,7 +22,8 @@ class preProcessing:
         """
         return df.dropna()
     
-    def filter_column(self, df: pd.DataFrame, column_name: str, expected_value)->pd.DataFrame:
+    @staticmethod
+    def filter_column(df: pd.DataFrame, column_name: str, expected_value)->pd.DataFrame:
         """
         Select df rows for which the column_name values are expected_value.
 
@@ -35,7 +37,8 @@ class preProcessing:
         """
         return df.loc[df[column_name] == expected_value]
     
-    def normalize_data(self, X: np.ndarray)->np.ndarray:
+    @staticmethod
+    def normalize_data(X: np.ndarray)->np.ndarray:
         """
         Normalize the dataframe using the Standard Scaler.
 

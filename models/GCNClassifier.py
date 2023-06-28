@@ -27,6 +27,10 @@ class GCNClassifier(torch.nn.Module):
         out = torch.sigmoid(self.linear(h))
 
         return out
+    
+    def predict_class(self, x, edge_index):
+        out = self.forward(x, edge_index)
+        return torch.where(out>=0.5, 1, 0)
 
     def forward_conv(self, x, edge_index):
         return self.conv(x, edge_index)

@@ -8,33 +8,33 @@ class BuildGraph:
     """ 
     This class creates a graph from an initial dataframe.
     """
-    def __init__(self, df: pd.DataFrame) -> None:
+    def __init__(self, X: np.ndarray, y: np.ndarray, group: np.ndarray) -> None:
         """ 
-        - df : the dataframe used to build the graph.
+        - X (n_samples, n_features) : the features of each node of the graph
+        - y (n_samples, ) : the label of each node of the graph
+        - group (n_samples, ) : the group of each node of the graph
         """
-        self.df = df
-        self.A = np.zeros((df.shape[0],df.shape[0]))
+        self.X = X
+        self.y = y
+        self.group = group
+        self.A = np.zeros((X.shape[0],X.shape[0]))
         self.G = None
 
-    def apply_clustering(self, model, columns_names: list[str])->np.ndarray:
-        """
-        Apply a clutering model and split patients per cluster.
+    # def apply_clustering(self, model)->np.ndarray:
+    #     """
+    #     Apply a clutering model and split patients per cluster.
 
-        ### Parameters :
-        - model : the sklearn clustering model
-        - columns_names : the names of features used in the dataframe to make the clustering.
+    #     ### Parameters :
+    #     - model : the sklearn clustering model
 
-        ### Returns :
-        The labels of each patient
-        """
+    #     ### Returns :
+    #     The labels of each patient
+    #     """
 
-        # Extract features of each patient
-        X = self.df.loc[:,columns_names].to_numpy()
-
-        # Apply the clustering and return labels.
-        return model.fit(X).labels_
+    #     # Apply the clustering and return labels.
+    #     return model.fit(self.X).labels_
     
-    def compute_adjacency_matrix(self, labels: list[str])->None:
+    def compute_adjacency_matrix(self)->None:
         """ 
         Compute the adjacency matrix of the graph, with splitting per label.
 
@@ -44,13 +44,13 @@ class BuildGraph:
         ### Returns :
         None
         """
-        shape_A = self.df.shape[0]
+        shape_A = self.X.shape[0]
 
         for i in range(shape_A):
-            label = labels[i]
-            self.A[i] = np.where(labels==label,1,0)
+            group = self.group[i]
+            self.A[i] = np.where(self.group==group,1,0)
 
-    def create_graph(self, features_name: list[str], label_name: str)->None:
+    def create_graph(self)->None:
         """ 
         Create the networkx graph from the adjacency matrix.
 
@@ -61,8 +61,8 @@ class BuildGraph:
         ### Returns :
         None
         """
-        X = torch.from_numpy(self.df.loc[:,features_name].to_numpy()).float()
-        y = torch.from_numpy(self.df[label_name].to_numpy()).float().unsqueeze(1)
+        X = torch.from_numpy(self.X).float()
+        y = torch.from_numpy(self.y).float().unsqueeze(1)
 
         # Initialize with empty graph
         self.G = nx.Graph()

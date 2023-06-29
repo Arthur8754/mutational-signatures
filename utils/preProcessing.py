@@ -15,12 +15,12 @@ class preProcessing:
         Delete rows which contains at least 1 NaN value.
 
         ### Parameters :
-        - df : the dataframe to analyze
+        - df : the dataframe for which we drop the NaN rows.
 
         ### Returns :
         The dataframe without NaN values.
         """
-        return df.dropna()
+        return df.dropna(axis=0)
     
     @staticmethod
     def filter_column(df: pd.DataFrame, column_name: str, expected_value)->pd.DataFrame:

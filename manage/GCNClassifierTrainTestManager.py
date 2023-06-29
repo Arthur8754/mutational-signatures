@@ -3,7 +3,7 @@ import torch
 from sklearn.model_selection import KFold
 from models.BuildGraph import BuildGraph
 from torch_geometric.utils import from_networkx
-from sklearn.metrics import euclidean_distances
+from sklearn.metrics.pairwise import euclidean_distances, cosine_distances, manhattan_distances
 
 class GCNClassifierTrainTestManager:
     """ 
@@ -16,7 +16,7 @@ class GCNClassifierTrainTestManager:
         """
         self.model = model
 
-    def leave_one_out_cross_validation(self, X: np.ndarray, y: np.ndarray, group: np.ndarray, n_epoch: int)->tuple[np.ndarray,np.ndarray]:
+    def leave_one_out_cross_validation(self, X: np.ndarray, y: np.ndarray, group: np.ndarray, n_epoch: int, distance_measure: str, max_neighbors: int)->tuple[np.ndarray,np.ndarray]:
         """ 
         Make a 1-fold CV to determine test labels and scores of the cohort.
 
@@ -25,6 +25,8 @@ class GCNClassifierTrainTestManager:
         - y (n_samples,) : the class of each patient.
         - group (n_samples,) : the group of each patient (for the graph).
         - n_epoch : the number of epoch for each training.
+        - distance_measure (euclidean, cosine, or manhattan) : the distance used when we prune the graph
+        - max_neighbors : the maximum of neighbors per node.
 
         ### Returns :
         - The test classes of each patient
@@ -59,9 +61,16 @@ class GCNClassifierTrainTestManager:
             build_graph_train.create_graph()
 
             # Prune graph
-            distance_matrix = euclidean_distances(X_train)
-            max_neighbors = 3
-            build_graph_train.prune_graph(distance_matrix, max_neighbors)
+            if distance_measure == "euclidean":
+                distance_matrix_train = euclidean_distances(X_train)
+            elif distance_measure == "cosine":
+                distance_matrix_train = cosine_distances(X_train)
+            elif distance_measure == "manhattan":
+                distance_matrix_train = manhattan_distances(X_train)
+            else:
+                raise ValueError
+
+            build_graph_train.prune_graph(distance_matrix_train, max_neighbors)
 
             # Convert graph to PyTorch geometric format
             pyg_graph_train = from_networkx(build_graph_train.G)
@@ -89,9 +98,16 @@ class GCNClassifierTrainTestManager:
             build_graph_test.create_graph()
 
             # Prune graph
-            distance_matrix = euclidean_distances(X)
-            max_neighbors = 3
-            build_graph_test.prune_graph(distance_matrix, max_neighbors)
+            if distance_measure == "euclidean":
+                distance_matrix_test = euclidean_distances(X)
+            elif distance_measure == "cosine":
+                distance_matrix_test = cosine_distances(X)
+            elif distance_measure == "manhattan":
+                distance_matrix_test = manhattan_distances(X)
+            else:
+                raise ValueError
+
+            build_graph_test.prune_graph(distance_matrix_test, max_neighbors)
 
             # Convert graph to PyTorch geometric format
             pyg_graph_test = from_networkx(build_graph_test.G)

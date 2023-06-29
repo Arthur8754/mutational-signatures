@@ -3,6 +3,7 @@ import torch
 from sklearn.model_selection import KFold
 from models.BuildGraph import BuildGraph
 from torch_geometric.utils import from_networkx
+from sklearn.metrics import euclidean_distances
 
 class GCNClassifierTrainTestManager:
     """ 
@@ -57,6 +58,11 @@ class GCNClassifierTrainTestManager:
             # Create graph
             build_graph_train.create_graph()
 
+            # Prune graph
+            distance_matrix = euclidean_distances(X_train)
+            max_neighbors = 3
+            build_graph_train.prune_graph(distance_matrix, max_neighbors)
+
             # Convert graph to PyTorch geometric format
             pyg_graph_train = from_networkx(build_graph_train.G)
 
@@ -81,6 +87,11 @@ class GCNClassifierTrainTestManager:
 
             # Create graph
             build_graph_test.create_graph()
+
+            # Prune graph
+            distance_matrix = euclidean_distances(X)
+            max_neighbors = 3
+            build_graph_test.prune_graph(distance_matrix, max_neighbors)
 
             # Convert graph to PyTorch geometric format
             pyg_graph_test = from_networkx(build_graph_test.G)

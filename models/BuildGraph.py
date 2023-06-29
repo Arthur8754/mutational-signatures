@@ -19,20 +19,6 @@ class BuildGraph:
         self.group = group
         self.A = np.zeros((X.shape[0],X.shape[0]))
         self.G = None
-
-    # def apply_clustering(self, model)->np.ndarray:
-    #     """
-    #     Apply a clutering model and split patients per cluster.
-
-    #     ### Parameters :
-    #     - model : the sklearn clustering model
-
-    #     ### Returns :
-    #     The labels of each patient
-    #     """
-
-    #     # Apply the clustering and return labels.
-    #     return model.fit(self.X).labels_
     
     def compute_adjacency_matrix(self)->None:
         """ 
@@ -75,7 +61,42 @@ class BuildGraph:
         rows, cols = np.where(self.A == 1)
         edges = zip(rows.tolist(), cols.tolist())
         self.G.add_edges_from(edges)
-    
+
+    def prune_graph(self, distance_matrix: np.ndarray, max_neighbors: int)->None:
+        """ 
+        Prune the graph, to have max max_neighbors neighbors per node.
+
+        ### Parameters :
+        - distance_matrix (n_samples, n_samples): the distance between nodes. If we need to drop nodes, we drop the edges between the most distant nodes.
+        - max_neighbors : the expected max of neighbors per node.
+        """
+
+        for i in range(distance_matrix.shape[0]):
+            
+            # Get neighbors of node i
+            neighbors_i = [n for n in self.G[i]]
+
+            # Distances from i
+            distance_i = distance_matrix[i][neighbors_i]
+
+            # Get the number of i neighbors to drop
+            number_to_drop = len(neighbors_i)-max_neighbors
+
+            while number_to_drop>0:
+                # Get the most distant node from i
+                to_drop = np.argmax(distance_i)
+
+                # Remove edge between i and to drop
+                self.G.remove_edge(i,neighbors_i[to_drop])
+
+                # Update adjacency matrix
+                self.A = nx.to_numpy_array(self.G)
+
+                # Update neighbors list, distance_i, to_drop
+                neighbors_i = [n for n in self.G[i]]
+                distance_i = distance_matrix[i][neighbors_i]
+                number_to_drop = len(neighbors_i)-max_neighbors
+                                
     def show_graph(self, title: str, filename: str)->None:
         """ 
         Create the graph from the adjacency matrix and plot it.

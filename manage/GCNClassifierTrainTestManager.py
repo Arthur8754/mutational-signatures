@@ -68,7 +68,7 @@ class GCNClassifierTrainTestManager:
             elif distance_measure == "manhattan":
                 distance_matrix_train = manhattan_distances(X_train)
             else:
-                raise ValueError
+                raise ValueError(f"distance_measure = {distance_measure} is not valid. Possible values are 'euclidean', 'cosine' and 'manhattan'.")
 
             build_graph_train.prune_graph(distance_matrix_train, max_neighbors)
 

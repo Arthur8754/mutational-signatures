@@ -84,6 +84,9 @@ class GCNClassifierTrainTestManager:
             # Training on num_epoch
             train_losses = self.model.train(n_epoch,pyg_graph_train.x, pyg_graph_train.edge_index, pyg_graph_train.y, loss_gnn, optimizer_gnn)
 
+            # for p in self.model.parameters():
+            #     print(p)
+
             ### 2 : TEST ###
 
             ## 2.1 : Add patient to the graph (rebuild graph) ##

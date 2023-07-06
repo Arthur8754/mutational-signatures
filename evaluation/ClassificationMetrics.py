@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, roc_auc_score
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_curve, roc_auc_score
 
 class ClassificationMetrics:
     """
@@ -20,7 +20,7 @@ class ClassificationMetrics:
         ### Returns :
         Accuracy, Precision, Recall, F1-score
         """
-        return np.round([accuracy_score(y_true, y_pred), precision_score(y_true, y_pred), recall_score(y_true, y_pred), f1_score(y_true, y_pred)],2)
+        return np.round([precision_score(y_true, y_pred), recall_score(y_true, y_pred), f1_score(y_true, y_pred)],2)
 
     @staticmethod
     def compute_roc_curve(y_true: np.ndarray, y_score: np.ndarray)->tuple[np.ndarray, np.ndarray, np.ndarray]:

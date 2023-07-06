@@ -41,6 +41,9 @@ class GCNClassifierTrainTestManager:
         test_scores = np.zeros(X.shape[0])
         test_classes = np.zeros(X.shape[0])
 
+        # Save weights
+        params_conv,params_linear = [],[]
+
         for i, (train_index, test_index) in enumerate(folds):
 
             # Select train set and test set
@@ -84,8 +87,9 @@ class GCNClassifierTrainTestManager:
             # Training on num_epoch
             train_losses = self.model.train(n_epoch,pyg_graph_train.x, pyg_graph_train.edge_index, pyg_graph_train.y, loss_gnn, optimizer_gnn)
 
-            # for p in self.model.parameters():
-            #     print(p)
+            # Save weights
+            params_conv.append(list(self.model.parameters())[1])
+            params_linear.append(list(self.model.parameters())[2])
 
             ### 2 : TEST ###
 
@@ -122,4 +126,4 @@ class GCNClassifierTrainTestManager:
             test_scores[test_index] = score_test[test_index]
             test_classes[test_index] = class_test[test_index]
 
-        return test_scores, test_classes
+        return test_scores, test_classes, params_conv, params_linear

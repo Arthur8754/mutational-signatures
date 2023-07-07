@@ -39,7 +39,7 @@ class GATClassifierTrainTestManager:
         test_classes = np.zeros(X.shape[0])
 
         # Save weights
-        params_conv,params_linear = [],[]
+        params_attention, params_conv,params_linear = [],[],[]
 
         for i, (train_index, test_index) in enumerate(folds):
 
@@ -73,8 +73,9 @@ class GATClassifierTrainTestManager:
             train_losses = self.model.train(n_epoch,pyg_graph_train.x, pyg_graph_train.edge_index, pyg_graph_train.y, loss_gnn, optimizer_gnn)
 
             # Save weights
-            params_conv.append(list(self.model.parameters())[1])
-            params_linear.append(list(self.model.parameters())[2])
+            params_attention.append(list(self.model.parameters())[2])
+            params_conv.append(list(self.model.parameters())[4])
+            params_linear.append(list(self.model.parameters())[6])
 
             ### 2 : TEST ###
 
@@ -99,4 +100,4 @@ class GATClassifierTrainTestManager:
             test_scores[test_index] = score_test[test_index]
             test_classes[test_index] = class_test[test_index]
 
-        return test_scores, test_classes, params_conv, params_linear
+        return test_scores, test_classes, params_attention, params_conv, params_linear

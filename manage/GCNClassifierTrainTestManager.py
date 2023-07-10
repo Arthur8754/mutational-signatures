@@ -205,4 +205,4 @@ class GCNClassifierTrainTestManager:
             test_scores[test_index] = score_test[test_index]
             test_classes[test_index] = class_test[test_index]
 
-        return test_scores, test_classes, np.mean(train_losses,axis=0), np.mean(val_losses,axis=0), params_conv, params_linear
+        return test_scores, test_classes, np.mean(train_losses,axis=0), np.mean(val_losses,axis=0), np.std(train_losses, axis=0), np.std(val_losses, axis=0), params_conv, params_linear

@@ -99,7 +99,7 @@ class BuildGraph:
                 distance_i = distance_matrix[i][neighbors_i]
                 number_to_drop = len(neighbors_i)-max_neighbors
 
-    def build_graph(self, distance_matrix, max_neighbors):
+    def build_graph(self, distance_matrix, max_neighbors, pruning):
         """ 
         Build the pytorch geometric graph from X, y and group.
         """
@@ -111,7 +111,8 @@ class BuildGraph:
         self.create_graph()
 
         # Prune the graph
-        self.prune_graph(distance_matrix, max_neighbors)
+        if pruning:
+            self.prune_graph(distance_matrix, max_neighbors)
 
         # Convert to PyTorch geometric
         self.pyg_graph = from_networkx(self.G)

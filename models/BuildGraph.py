@@ -3,6 +3,7 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 import torch
+from torch_geometric.utils import from_networkx
 
 class BuildGraph:
     """ 
@@ -19,6 +20,7 @@ class BuildGraph:
         self.group = group
         self.A = np.zeros((X.shape[0],X.shape[0]))
         self.G = None
+        self.pyg_graph = None        
     
     def compute_adjacency_matrix(self)->None:
         """ 
@@ -96,6 +98,24 @@ class BuildGraph:
                 neighbors_i = [n for n in self.G[i]]
                 distance_i = distance_matrix[i][neighbors_i]
                 number_to_drop = len(neighbors_i)-max_neighbors
+
+    def build_graph(self, distance_matrix, max_neighbors):
+        """ 
+        Build the pytorch geometric graph from X, y and group.
+        """
+        
+        # Compute adjacency matrix
+        self.compute_adjacency_matrix()
+
+        # Create the graph
+        self.create_graph()
+
+        # Prune the graph
+        self.prune_graph(distance_matrix, max_neighbors)
+
+        # Convert to PyTorch geometric
+        self.pyg_graph = from_networkx(self.G)
+
                                 
     def show_graph(self, title: str, filename: str)->None:
         """ 

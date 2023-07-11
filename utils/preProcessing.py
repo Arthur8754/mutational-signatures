@@ -49,3 +49,27 @@ class preProcessing:
         The 2D normalized numpy array
         """
         return StandardScaler().fit_transform(X)
+    
+    @staticmethod
+    def drop_censored_patients(df: pd.DataFrame, status_name: str, time_name: str, t: float)->pd.DataFrame:
+        """ 
+        Delete censored patients from the initial dataframe. A censored patient is a patient with status = 0 and time_event < t.
+
+        ### Parameters :
+        - df : the dataframe to update
+        - status_name : the name of the status event column in the dataframe
+        - time_name : the name of the time event column in the dataframe
+        - t : the time when we look at (threshold).
+
+        ### Returns :
+        The dataframe without censored patients.
+        """
+
+        # Get index of to drop patients
+        to_drop = df.index[np.where((df[status_name] == 0) & (df[time_name]<t))[0]]
+        print(f"{to_drop.shape[0]} patients censored deleted")
+
+        # Update dataframe
+        df_non_censored = df.drop(to_drop,axis=0)
+
+        return df_non_censored

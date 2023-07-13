@@ -51,9 +51,13 @@ class preProcessing:
         return StandardScaler().fit_transform(X)
     
     @staticmethod
-    def drop_censored_patients(df: pd.DataFrame, status_name: str, time_name: str, t: float)->pd.DataFrame:
+    def relabel_patients(df: pd.DataFrame, status_name: str, time_name: str, t: float)->pd.DataFrame:
         """ 
-        Delete censored patients from the initial dataframe. A censored patient is a patient with status = 0 and time_event < t.
+        Relabel patients depending on the event status, the time of event, and the time t when we look at.
+        - status = 1 & time < t : 1 : the event occured during the window [0,t].
+        - status = 1 & time > t : 0 : the event occured but after time t. So at time t, the event has not occured yet.
+        - status = 0 & time < t : x : we don't know what happened between time and t. Censored patients
+        - status = 0 & time > t : 0 : we know during the the window [0,t], the event has not occured.
 
         ### Parameters :
         - df : the dataframe to update
@@ -62,14 +66,14 @@ class preProcessing:
         - t : the time when we look at (threshold).
 
         ### Returns :
-        The dataframe without censored patients.
+        The dataframe relabelised
         """
 
-        # Get index of to drop patients
+        # Drop censored patients
         to_drop = df.index[np.where((df[status_name] == 0) & (df[time_name]<t))[0]]
-        print(f"{to_drop.shape[0]} patients censored deleted")
+        df = df.drop(to_drop, axis=0)
 
-        # Update dataframe
-        df_non_censored = df.drop(to_drop,axis=0)
+        # Relabel patients. If time < t, 1, otherwise 0
+        df[status_name] = np.where(df[time_name]<t, 1, 0)
 
-        return df_non_censored
+        return df

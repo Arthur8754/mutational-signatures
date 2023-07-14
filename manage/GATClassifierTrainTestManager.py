@@ -2,8 +2,6 @@ import numpy as np
 import torch
 from sklearn.model_selection import KFold, train_test_split
 from models.BuildGraph import BuildGraph
-from torch_geometric.utils import from_networkx
-from sklearn.metrics.pairwise import euclidean_distances, cosine_distances, manhattan_distances
 
 class GATClassifierTrainTestManager:
     """ 

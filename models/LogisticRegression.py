@@ -23,29 +23,3 @@ class LogisticRegression(torch.nn.Module):
     def predict_class(self, x):
         out = self.forward(x)
         return torch.where(out>=0.5, 1, 0)
-    
-    def train(self, n_epochs, x, edge_index, y, loss_function, optimizer):
-        """ 
-        Train the model for n_epochs.
-        """
-        train_loss = []
-
-        for epoch in range(n_epochs):
-
-            # Clear gradients
-            optimizer.zero_grad()
-
-            # Forward pass
-            out = self.forward(x, edge_index)
-
-            # Compute loss
-            loss = loss_function(out, y)
-            train_loss.append(loss.item())
-
-            # Backward pass (gradients computation)
-            loss.backward()
-
-            # Update parameters
-            optimizer.step()
-
-        return train_loss
